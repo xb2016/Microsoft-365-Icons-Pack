@@ -26,7 +26,7 @@ setlocal EnableDelayedExpansion
 :: Directory Configuration
 :: -----------------------
 set "FILES=accicons.exe grv_icons.exe joticon.exe outicon.exe pj11icon.exe pptico.exe pubs.exe visicon.exe wordicon.exe xlicons.exe"
-set "VERSIONS=O2003 O2007 O2010 O2013-2016 O2019-2024"
+set "VERSIONS=O2003 O2007 O2010 O2013-2016 O2019-2024 O2025"
 set "TARGET1=C:\Program Files\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-1000-0000000FF1CE}"
 set "TARGET2=C:\Program Files (x86)\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-1000-0000000FF1CE}"
 set "BACKUP_BASE=C:\ProgramData\OfficeIconsBackup"
