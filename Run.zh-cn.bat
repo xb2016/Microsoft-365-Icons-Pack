@@ -27,8 +27,12 @@ setlocal EnableDelayedExpansion
 :: -----------------------
 set "FILES=accicons.exe grv_icons.exe joticon.exe outicon.exe pj11icon.exe pptico.exe pubs.exe visicon.exe wordicon.exe xlicons.exe"
 set "VERSIONS=O2003 O2007 O2010 O2013-2016 O2019-2024 O2025"
+:: 64 bit os, 64 bit office
 set "TARGET1=C:\Program Files\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-1000-0000000FF1CE}"
-set "TARGET2=C:\Program Files (x86)\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-1000-0000000FF1CE}"
+:: 64 bit os, 32 bit office
+set "TARGET2=C:\Program Files (x86)\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-0000-0000000FF1CE}"
+:: 32 bit os, 32 bit office
+set "TARGET3=C:\Program Files\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-0000-0000000FF1CE}"
 set "BACKUP_BASE=C:\ProgramData\OfficeIconsBackup"
 
 :: -----------------------
@@ -70,6 +74,7 @@ if exist "%BACKUP_BASE%\backup_%OFFICE_VER%\" set "BACKUP_EXISTS=1"
 :: ¼ì²âÄ¿±êÄ¿Â¼
 :: -----------------------
 set "TARGET="
+if exist "%TARGET3%\" set "TARGET=%TARGET3%"
 if exist "%TARGET2%\" set "TARGET=%TARGET2%"
 if exist "%TARGET1%\" set "TARGET=%TARGET1%"
 if "%TARGET%"=="" (
@@ -82,6 +87,8 @@ if "%TARGET%"=="" (
 	echo.   [1] !TARGET1!
 	echo.
 	echo.   [2] !TARGET2!
+	echo.
+	echo.   [3] !TARGET3!
 	echo.
 	echo. ==========================================================
     echo.
