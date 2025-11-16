@@ -33,7 +33,7 @@ set "BACKUP_BASE=C:\ProgramData\OfficeIconsBackup"
 :: Start Menu directory
 set "START_MENU=C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
 :: Start Menu shortcut name
-set "LNK_NAME="Access" "Excel" "OneDrive for Business" "OneNote" "Outlook (classic)" "PowerPoint" "Project" "Publisher" "Skype for Business" "Sticky Notes (new)" "Visio" "Word""
+set "LNK_NAME="Access" "Excel" "OneDrive for Business" "OneNote" "Outlook (classic)" "PowerPoint" "Project Server Accounts" "Project" "Publisher" "Skype for Business" "Sticky Notes (new)" "Visio" "Word""
 :: Target directory
 set "TARGET1=C:\Program Files\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-1000-0000000FF1CE}"
 set "TARGET2=C:\Program Files (x86)\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-0000-0000000FF1CE}"
@@ -210,6 +210,11 @@ attrib /s /d -h -s -r "%localappdata%\Microsoft\Windows\Explorer\*" >nul 2>&1
 del /f /q "%localappdata%\IconCache.db" >nul 2>&1
 del /f /q "%localappdata%\Microsoft\Windows\Explorer\thumbcache_*.db" >nul 2>&1
 del /f /q "%localappdata%\Microsoft\Windows\Explorer\iconcache_*.db" >nul 2>&1
+for %%A in (%LNK_NAME%) do (
+    for /f "delims=" %%F in ('dir /b /s "%START_MENU%\%%~A.lnk" 2^>nul') do (
+        cscript //nologo "%cd%\Tools\ReflashShortcut.vbs" "%%F"
+    )
+)
 ping 127.0.0.1 -n 2 >nul
 start explorer.exe
 cls
@@ -234,7 +239,7 @@ if not "%CHOICE%"=="%restoreOpt%" if "%IS_WIN10%"=="1" (
 echo. For details, please refer to https://moedog.org/1331.html
 echo.
 echo. ==========================================================
-goto REFLASHSHORTCUT
+goto EXIT
 
 :: -----------------------
 :: Force change Start screen tile (Windows 10)
@@ -273,28 +278,15 @@ if not exist "%VBS_TARGET%" (
     goto EXIT
 )
 for %%A in (%LNK_NAME%) do (
-    set "lnkFile=%START_MENU%\%%~A.lnk"
-    if exist "!lnkFile!" (
-        echo   - %%~A.lnk
-        cscript //nologo "%cd%\Tools\EditShortcut.vbs" "!lnkFile!" "%VBS_TARGET%"
+    for /f "delims=" %%F in ('dir /b /s "%START_MENU%\%%~A.lnk" 2^>nul') do (
+        echo.   - %%~A.lnk
+        cscript //nologo "%cd%\Tools\EditShortcut.vbs" "%%F" "%VBS_TARGET%"
     )
 )
 echo.
 echo. Modification completed.
 echo.
 echo. ==========================================================
-goto REFLASHSHORTCUT
-
-:: -----------------------
-:: Refresh Start Menu shortcuts
-:: -----------------------
-:REFLASHSHORTCUT
-for %%A in (%LNK_NAME%) do (
-    set "lnkFile=%START_MENU%\%%~A.lnk"
-    if exist "!lnkFile!" (
-        cscript //nologo "%cd%\Tools\ReflashShortcut.vbs" "!lnkFile!"
-    )
-)
 goto EXIT
 
 :: -----------------------
@@ -313,6 +305,13 @@ if exist "%BACKUP_BASE%\backup_%OFFICE_VER%\" (
     echo.
     echo. Restoring from backup_%OFFICE_VER%...
     for %%F in (%FILES%) do if exist "%BACKUP_BASE%\backup_%OFFICE_VER%\%%F" copy /y "%BACKUP_BASE%\backup_%OFFICE_VER%\%%F" "%TARGET%\%%F" >nul
+    if "%IS_WIN10%"=="1" (
+        for %%A in (%LNK_NAME%) do (
+            for /f "delims=" %%F in ('dir /b /s "%START_MENU%\%%~A.lnk" 2^>nul') do (
+                cscript //nologo "%cd%\Tools\EditShortcut.vbs" "%%F" "%BACKUP_BASE%\LaunchOfficeApp.vbs" restore
+            )
+        )
+    )
     echo. Restore complete, you may need to clear thumbnail
     echo. cache and restart Explorer for changes to take effect.
     echo.

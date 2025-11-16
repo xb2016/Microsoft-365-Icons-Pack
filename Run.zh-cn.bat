@@ -33,7 +33,7 @@ set "BACKUP_BASE=C:\ProgramData\OfficeIconsBackup"
 :: 开始菜单目录
 set "START_MENU=C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
 :: 开始菜单快捷方式名
-set "LNK_NAME="Access" "Excel" "OneDrive for Business" "OneNote" "Outlook (classic)" "PowerPoint" "Project" "Publisher" "Skype for Business" "Sticky Notes (new)" "Visio" "Word""
+set "LNK_NAME="Access" "Excel" "OneDrive for Business" "OneNote" "Outlook (classic)" "PowerPoint" "Project Server Accounts" "Project" "Publisher" "Skype for Business" "Sticky Notes (new)" "Visio" "Word""
 :: 目标目录
 set "TARGET1=C:\Program Files\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-1000-0000000FF1CE}"
 set "TARGET2=C:\Program Files (x86)\Microsoft Office\root\vfs\Windows\Installer\{90160000-000F-0000-0000-0000000FF1CE}"
@@ -208,6 +208,11 @@ attrib /s /d -h -s -r "%localappdata%\Microsoft\Windows\Explorer\*" >nul 2>&1
 del /f /q "%localappdata%\IconCache.db" >nul 2>&1
 del /f /q "%localappdata%\Microsoft\Windows\Explorer\thumbcache_*.db" >nul 2>&1
 del /f /q "%localappdata%\Microsoft\Windows\Explorer\iconcache_*.db" >nul 2>&1
+for %%A in (%LNK_NAME%) do (
+    for /f "delims=" %%F in ('dir /b /s "%START_MENU%\%%~A.lnk" 2^>nul') do (
+        cscript //nologo "%cd%\Tools\ReflashShortcut.vbs" "%%F"
+    )
+)
 ping 127.0.0.1 -n 2 >nul
 start explorer.exe
 cls
@@ -229,7 +234,7 @@ if not "%CHOICE%"=="%restoreOpt%" if "%IS_WIN10%"=="1" (
 echo. 详情请参考 https://moedog.org/1331.html
 echo.
 echo. ==========================================================
-goto REFLASHSHORTCUT
+goto EXIT
 
 :: -----------------------
 :: 强制更改开始屏幕磁贴 (Windows 10)
@@ -266,28 +271,15 @@ if not exist "%VBS_TARGET%" (
     goto EXIT
 )
 for %%A in (%LNK_NAME%) do (
-    set "lnkFile=%START_MENU%\%%~A.lnk"
-    if exist "!lnkFile!" (
-        echo   - %%~A.lnk
-        cscript //nologo "%cd%\Tools\EditShortcut.vbs" "!lnkFile!" "%VBS_TARGET%"
+    for /f "delims=" %%F in ('dir /b /s "%START_MENU%\%%~A.lnk" 2^>nul') do (
+        echo.   - %%~A.lnk
+        cscript //nologo "%cd%\Tools\EditShortcut.vbs" "%%F" "%VBS_TARGET%"
     )
 )
 echo.
 echo. 修改完成
 echo.
 echo. ==========================================================
-goto REFLASHSHORTCUT
-
-:: -----------------------
-:: 刷新开始菜单快捷方式
-:: -----------------------
-:REFLASHSHORTCUT
-for %%A in (%LNK_NAME%) do (
-    set "lnkFile=%START_MENU%\%%~A.lnk"
-    if exist "!lnkFile!" (
-        cscript //nologo "%cd%\Tools\ReflashShortcut.vbs" "!lnkFile!"
-    )
-)
 goto EXIT
 
 :: -----------------------
@@ -306,6 +298,13 @@ if exist "%BACKUP_BASE%\backup_%OFFICE_VER%\" (
     echo.
     echo. 正在从 backup_%OFFICE_VER% 恢复...
     for %%F in (%FILES%) do if exist "%BACKUP_BASE%\backup_%OFFICE_VER%\%%F" copy /y "%BACKUP_BASE%\backup_%OFFICE_VER%\%%F" "%TARGET%\%%F" >nul
+    if "%IS_WIN10%"=="1" (
+        for %%A in (%LNK_NAME%) do (
+            for /f "delims=" %%F in ('dir /b /s "%START_MENU%\%%~A.lnk" 2^>nul') do (
+                cscript //nologo "%cd%\Tools\EditShortcut.vbs" "%%F" "%BACKUP_BASE%\LaunchOfficeApp.vbs" restore
+            )
+        )
+    )
     echo. 恢复完成，需要清除缩略图缓存并重启资源管理器才能生效
     rd /s /q "%BACKUP_BASE%\backup_%OFFICE_VER%" 2>nul
     goto CLEAN
